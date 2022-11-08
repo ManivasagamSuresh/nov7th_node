@@ -9,7 +9,7 @@ const mongoclient = new mongodb.MongoClient(URL)
 // const nodemon = require("nodemon")
 
 app.use(cors({
-    origin: "http://localhost:3000"
+    origin: "https://cosmic-narwhal-c03b73.netlify.app"
 }))
 app.use(express.json())
 
