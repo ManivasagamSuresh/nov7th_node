@@ -14,8 +14,8 @@ const nodemailer = require("nodemailer") ;
 const JWT_pass=process.env.JWT_pass;
 
 app.use(cors({
-    // origin: "https://cosmic-narwhal-c03b73.netlify.app"
-    origin: "http://localhost:3000"
+    origin: "https://cosmic-narwhal-c03b73.netlify.app"
+    // origin: "http://localhost:3000"
 
 }))
 app.use(express.json())
