@@ -89,7 +89,9 @@ app.post("/user/register",async(req,res)=>{
                 const compare = await bcrypt.compare(req.body.password,user.password);
                if(compare){
                 const token =jwt.sign({_id:user._id},JWT_Secret,{expiresIn:"24hr"})
-                res.json({message:"success",token});
+                res.json({message:"success",
+                _id:user._id,
+                token});
                  }else{
                  res.json({message:"incorrect mail/password"})
                         }
@@ -132,13 +134,13 @@ app.get("/users",async(req,res)=>{
     })
     
     // check if mail exists
-    app.get("/users/mailcheck",async(req,res)=>{
+    app.post("/users/checkmail",async(req,res)=>{
         try{
-            const connection = await mongoclient.connect()
+            const connection = await mongoclient.connect();
         
             const db = connection.db("nov7th");
         
-            const p = await db.collection("users").find({email:req.mail}).toArray();
+            const p = await db.collection("users").findOne({email:req.body.email});
         
             await connection.close()
         
@@ -153,7 +155,7 @@ app.get("/users",async(req,res)=>{
         })
     
 // sending mail
- app.get("/sendMail/:id",async(req,res)=>{
+ app.post("/sendMail/:id",async(req,res)=>{
                 
 const transporter = nodemailer.createTransport(
     {
@@ -166,10 +168,11 @@ const transporter = nodemailer.createTransport(
 
 const details = {
     from: "manivasagam.suresh@outlook.com",
-    to:`${req.body}`,
+    to:`${req.body.email}`,
     subject:"sending from node.js",
     text:`hi .please click the below link to change your password,For Login use the following temp password " ${JWT_pass} " `,
-    html: `<a href=http://localhost:3000/ChangePassword/${req.params._id}>Click Here</a>`
+    html: `<p>hi .please click the below link to change your password,For Login use the following temp password " ${JWT_pass} " </p>
+    <a href=http://localhost:3000/LoginPass>Click Here</a>`
 
 };
 transporter.sendMail(details,(err,info)=>{
@@ -181,9 +184,12 @@ transporter.sendMail(details,(err,info)=>{
 
 }) 
             })
+
+
+
   
   // setting temp pass
-            app.put("/tempPassChange",async(req,res)=>{
+            app.put("/tempPassChange/:id",async(req,res)=>{
                 try{
                     const connection = await mongoclient.connect()
                 
@@ -201,6 +207,7 @@ transporter.sendMail(details,(err,info)=>{
                     await connection.close()
                 
                     res.json(p); 
+                    console.log("temp password changed")
                 }
                 catch(err){
                     console.log(err);
@@ -223,9 +230,16 @@ transporter.sendMail(details,(err,info)=>{
                     const connection = await mongoclient.connect()
                 
                     const db = connection.db("nov7th");
+
+                    var salt = await bcrypt.genSalt(10);
+        // console.log(salt);
+        var hash=await bcrypt.hash(req.body.confirmpassword,salt);
+        // console.log(hash);
+        let Pass=hash;
+
             
                     const p = await db.collection("users")
-                                        .updateOne({_id:mongodb.ObjectId(req.params.id)},{$set:{password:req.body.confirmpassword}});
+                                        .updateOne({_id:mongodb.ObjectId(req.params.id)},{$set:{password:Pass}});
                 
                     await connection.close()
                 
